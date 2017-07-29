@@ -21,8 +21,26 @@ then
 fi
 
 echo "::unzip"
-unzip -f -o jpegsr9b.zip 
+unzip -o jpegsr9b.zip
 
 cp $ROOT/patch/jpeg_project.zip .
-unzip -f -o jpeg_project.zip -d jpeg-9b
+unzip -o jpeg_project.zip -d jpeg-9b
 rm -f jpeg_project.zip
+
+cd jpeg-9b
+cp -f jconfig.vc jconfig.h
+
+echo "::make install"
+mkdir $ROOT/bin/
+mkdir $ROOT/bin/libjpeg/
+mkdir $ROOT/bin/libjpeg/include
+cp -f *.h $ROOT/bin/libjpeg/include
+
+PROJECT=project
+TARGET=$ROOT/bin/libjpeg
+cp -f -r ./$PROJECT/lib/ $TARGET
+
+echo "::make clean"
+rm -f -r ./$PROJECT/Debug
+rm -f -r ./$PROJECT/Release
+rm -f -r ./$PROJECT/x64/
