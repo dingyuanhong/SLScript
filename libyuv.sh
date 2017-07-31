@@ -5,6 +5,7 @@ if [ ! -d bin ]
 then
 	mkdir bin
 fi
+export OUTPUT=$ROOT/bin
 
 EXTERA=extra
 echo '::'$EXTERA
@@ -23,14 +24,14 @@ unzip -o libyuv_project.zip -d libyuv
 
 cd libyuv
 echo "::copy jpeg"
-cp -f -r $ROOT/bin/libjpeg ./third_party/jpeg
+cp -f -r $OUTPUT/libjpeg ./third_party/jpeg
 
 echo "::make install"
-mkdir $ROOT/bin/libyuv
-cp -f -r ./include $ROOT/bin/libyuv
+mkdir $OUTPUT/libyuv
+cp -f -r ./include $$OUTPUT/libyuv
 
 PROJECT=project/libyuv
-TARGET=$ROOT/bin/libyuv/lib
+TARGET=$$OUTPUT/libyuv/lib
 mkdir $TARGET
 mkdir $TARGET/Debug
 mkdir $TARGET/Release

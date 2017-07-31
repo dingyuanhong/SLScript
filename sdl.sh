@@ -5,6 +5,7 @@ if [ ! -d bin ]
 then
 	mkdir bin
 fi
+export OUTPUT=$ROOT/bin
 
 EXTERA=extra
 echo '::'$EXTERA
@@ -22,13 +23,13 @@ tar -xzvf SDL2-2.0.5.tar.gz
 cd SDL2-2.0.5
 
 echo "::make install"
-mkdir $ROOT/bin/SDL
-mkdir $ROOT/bin/SDL/include
-mkdir $ROOT/bin/SDL/include/SDL
-cp -f ./include/*.* $ROOT/bin/SDL/include/SDL
+mkdir $OUTPUT/SDL
+mkdir $OUTPUT/SDL/include
+mkdir $OUTPUT/SDL/include/SDL
+cp -f ./include/*.* $OUTPUT/SDL/include/SDL
 
 PROJECT=VisualC
-TARGET=$ROOT/bin/SDL/lib
+TARGET=$OUTPUT/SDL/lib
 mkdir $TARGET
 mkdir $TARGET/Debug
 mkdir $TARGET/Release

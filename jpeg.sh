@@ -5,6 +5,7 @@ if [ ! -d bin ]
 then
 	mkdir bin
 fi
+export OUTPUT=$ROOT/bin
 
 EXTERA=extra
 echo '::'$EXTERA
@@ -31,13 +32,13 @@ cd jpeg-9b
 cp -f jconfig.vc jconfig.h
 
 echo "::make install"
-mkdir $ROOT/bin/
-mkdir $ROOT/bin/libjpeg/
-mkdir $ROOT/bin/libjpeg/include
-cp -f *.h $ROOT/bin/libjpeg/include
+mkdir $OUTPUT
+mkdir $OUTPUT/libjpeg/
+mkdir $OUTPUT/libjpeg/include
+cp -f *.h $OUTPUT/libjpeg/include
 
 PROJECT=project
-TARGET=$ROOT/bin/libjpeg
+TARGET=$OUTPUT/libjpeg
 cp -f -r ./$PROJECT/lib/ $TARGET
 
 echo "::make clean"

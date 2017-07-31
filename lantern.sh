@@ -5,6 +5,7 @@ if [ ! -d bin ]
 then
 	mkdir bin
 fi
+export OUTPUT=$ROOT/bin
 
 EXTERA=extra
 echo '::'$EXTERA
@@ -39,7 +40,7 @@ then
 	#make package-windows
 	
 	echo '::make install'
-	cp -f *.exe $ROOT/bin
+	cp -f *.exe $OUTPUT
 	make clean
 else
 	HEADLESS=true make package-linux
