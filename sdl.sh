@@ -22,7 +22,7 @@ makedir $EXTERA
 echo "::download sdl"
 cd $EXTERA
  
-#wget http://www.libsdl.org/release/SDL2-2.0.5.tar.gz
+wget http://www.libsdl.org/release/SDL2-2.0.5.tar.gz
 rm -r -f SDL2-2.0.5
 tar -xzvf SDL2-2.0.5.tar.gz
 

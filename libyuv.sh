@@ -21,8 +21,8 @@ makedir $EXTERA
 
 echo "::download libyuv"
 cd $EXTERA
-#git clone --depth 1 https://github.com/lemenkov/libyuv.git
-#git pull
+git clone --depth 1 https://github.com/lemenkov/libyuv.git
+git pull
 
 cp $ROOT/patch/libyuv_project.zip .
 unzip -o libyuv_project.zip -d libyuv
