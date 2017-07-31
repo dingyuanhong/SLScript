@@ -1,18 +1,24 @@
 #!/bin/sh
 
+#vs2015编译程序
+export DEVENV="devenv.exe"
+
+function makedir()
+{
+	p=$1
+	if [ ! -d $p ]
+	then
+		mkdir $p
+	fi
+}
+
 export ROOT=$(pwd)
-if [ ! -d bin ]
-then
-	mkdir bin
-fi
+makedir bin
 export OUTPUT=$ROOT/bin
 
 EXTERA=extra
 echo '::'$EXTERA
-if [ ! -d $EXTERA ]
-then
-	mkdir $EXTERA
-fi
+makedir $EXTERA
 
 cd $EXTERA
 echo "::wget jpeg"
@@ -29,20 +35,31 @@ unzip -o jpeg_project.zip -d jpeg-9b
 rm -f jpeg_project.zip
 
 cd jpeg-9b
+SOURCE=$(pwd)
 cp -f jconfig.vc jconfig.h
 
-echo "::make install"
-mkdir $OUTPUT
-mkdir $OUTPUT/libjpeg/
-mkdir $OUTPUT/libjpeg/include
-cp -f *.h $OUTPUT/libjpeg/include
+echo "::window build"
+echo "::build: ${VS140COMNTOOLS}/../IDE/devenv.exe"
+cd project
+cd jpeg
 
-PROJECT=project
+$DEVENV jpeg.sln -project jpeg -Build "Debug|x64"
+$DEVENV jpeg.sln -project jpeg -Build "Debug|x86"
+$DEVENV jpeg.sln -project jpeg -Build "Release|x64"
+$DEVENV jpeg.sln -project jpeg -Build "Release|x86"
+
+echo "::make install"
+makedir $OUTPUT
+makedir $OUTPUT/libjpeg/
+makedir $OUTPUT/libjpeg/include
+cp -f $SOURCE/*.h $OUTPUT/libjpeg/include
+
+PROJECT=$SOURCE/project
 TARGET=$OUTPUT/libjpeg
-cp -f -r ./$PROJECT/lib/ $TARGET
+cp -f -r $PROJECT/lib/ $TARGET
 
 echo "::make clean"
-rm -f -r ./$PROJECT/jpeg/Debug
-rm -f -r ./$PROJECT/jpeg/Release
-rm -f -r ./$PROJECT/jpeg/x64/
-rm -f  ./$PROJECT/jpeg/*.sdf
+rm -f -r $PROJECT/jpeg/Debug
+rm -f -r $PROJECT/jpeg/Release
+rm -f -r $PROJECT/jpeg/x64/
+rm -f  $PROJECT/jpeg/*.sdf
