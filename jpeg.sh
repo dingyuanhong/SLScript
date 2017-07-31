@@ -41,6 +41,7 @@ TARGET=$ROOT/bin/libjpeg
 cp -f -r ./$PROJECT/lib/ $TARGET
 
 echo "::make clean"
-rm -f -r ./$PROJECT/Debug
-rm -f -r ./$PROJECT/Release
-rm -f -r ./$PROJECT/x64/
+rm -f -r ./$PROJECT/jpeg/Debug
+rm -f -r ./$PROJECT/jpeg/Release
+rm -f -r ./$PROJECT/jpeg/x64/
+rm -f  ./$PROJECT/jpeg/*.sdf

@@ -46,3 +46,4 @@ echo "::make clean"
 rm -f -r ./$PROJECT/Debug
 rm -f -r ./$PROJECT/Release
 rm -f -r ./$PROJECT/x64/
+rm -f  ./$PROJECT/*.sdf
