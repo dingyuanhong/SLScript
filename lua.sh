@@ -22,7 +22,7 @@ makedir $EXTERA
 
 echo "::download lua"
 cd $EXTERA
-#wget http://www.lua.org/ftp/lua-5.3.4.tar.gz
+wget http://www.lua.org/ftp/lua-5.3.4.tar.gz
 tar -xzf lua-5.3.4.tar.gz
 
 echo "::patch"
