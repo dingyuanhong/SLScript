@@ -1,1 +1,1 @@
-./config/module-lite.sh
+config/module-lite.sh

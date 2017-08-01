@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /bin/bash
 
 #--------------------
 # Standard options:
@@ -247,3 +247,5 @@ export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --disable-videotoolbox"
 # export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --enable-random=LIST"
 # export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --disable-random=LIST"
 # export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --random-seed=VALUE"
+
+echo "${COMMON_FF_CFG_FLAGS}"
