@@ -58,6 +58,9 @@ case "$IJK_NDK_REL" in
                 CYGWIN_NT-*)
                     export IJK_MAKE_TOOLCHAIN_FLAGS="$IJK_MAKE_TOOLCHAIN_FLAGS --system=windows-x86_64"
                 ;;
+                MINGW32_NT-*)
+                    export IJK_MAKE_TOOLCHAIN_FLAGS="$IJK_MAKE_TOOLCHAIN_FLAGS --system=windows-x86_64"
+                ;;
             esac
         else
             echo "You need the NDKr10e or later"
@@ -92,6 +95,13 @@ case "$UNAME_S" in
     ;;
     CYGWIN_NT-*)
         IJK_WIN_TEMP="$(cygpath -am /tmp)"
+        export TEMPDIR=$IJK_WIN_TEMP/
+
+        echo "Cygwin temp prefix=$IJK_WIN_TEMP/"
+    ;;
+    MINGW32_NT-*)
+        IJK_WIN_TEMP="$(cygpath -am /tmp)"
+        echo $IJK_WIN_TEMP
         export TEMPDIR=$IJK_WIN_TEMP/
 
         echo "Cygwin temp prefix=$IJK_WIN_TEMP/"

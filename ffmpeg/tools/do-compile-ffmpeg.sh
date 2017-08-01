@@ -30,6 +30,8 @@ set -e
 # common defines
 FF_ARCH=$1
 FF_BUILD_OPT=$2
+FF_BUILD_ROOT=$3
+
 echo "FF_ARCH=$FF_ARCH"
 echo "FF_BUILD_OPT=$FF_BUILD_OPT"
 if [ -z "$FF_ARCH" ]; then
@@ -38,8 +40,10 @@ if [ -z "$FF_ARCH" ]; then
     exit 1
 fi
 
+if [ "$FF_BUILD_ROOT" = "" ] ;then
+	FF_BUILD_ROOT=`pwd`
+fi
 
-FF_BUILD_ROOT=`pwd`
 FF_ANDROID_PLATFORM=android-9
 
 
@@ -236,7 +240,7 @@ FF_CFLAGS="-O3 -Wall -pipe \
 #FF_CFLAGS="$FF_CFLAGS -finline-limit=300"
 
 export COMMON_FF_CFG_FLAGS=
-. $FF_BUILD_ROOT/../../config/module.sh
+. ./config/module.sh
 
 
 #--------------------
@@ -326,33 +330,80 @@ echo "[*] link ffmpeg"
 echo "--------------------"
 echo $FF_EXTRA_LDFLAGS
 
+FF_MERGE_O_A=1
 FF_C_OBJ_FILES=
 FF_ASM_OBJ_FILES=
+FF_C_MERGE_FILES=
 for MODULE_DIR in $FF_MODULE_DIRS
 do
     C_OBJ_FILES="$MODULE_DIR/*.o"
     if ls $C_OBJ_FILES 1> /dev/null 2>&1; then
-        echo "link $MODULE_DIR/*.o"
-        FF_C_OBJ_FILES="$FF_C_OBJ_FILES $C_OBJ_FILES"
+		echo "link $MODULE_DIR/*.o"
+		FF_C_OBJ_FILES="$FF_C_OBJ_FILES $C_OBJ_FILES"
+		
+		if [ $FF_MERGE_O_A == 1 ]; then
+			$AR rcs $FF_PREFIX/lib${MODULE_DIR}.a $C_OBJ_FILES
+			FF_C_MERGE_FILES="$FF_C_MERGE_FILES lib${MODULE_DIR}.a"
+		else
+			$LD -r $C_OBJ_FILES -o $FF_PREFIX/lib${MODULE_DIR}.o
+			FF_C_MERGE_FILES="$FF_C_MERGE_FILES $FF_PREFIX/lib${MODULE_DIR}.o"
+		fi
     fi
-
+	
     for ASM_SUB_DIR in $FF_ASSEMBLER_SUB_DIRS
     do
         ASM_OBJ_FILES="$MODULE_DIR/$ASM_SUB_DIR/*.o"
         if ls $ASM_OBJ_FILES 1> /dev/null 2>&1; then
-            echo "link $MODULE_DIR/$ASM_SUB_DIR/*.o"
-            FF_ASM_OBJ_FILES="$FF_ASM_OBJ_FILES $ASM_OBJ_FILES"
+			echo "link $MODULE_DIR/$ASM_SUB_DIR/*.o"
+			FF_ASM_OBJ_FILES="$FF_ASM_OBJ_FILES $ASM_OBJ_FILES"
+			
+			if [ $FF_MERGE_O_A == 1 ]; then
+				$AR rcs $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.a $ASM_OBJ_FILES
+				FF_C_MERGE_FILES="$FF_C_MERGE_FILES lib${MODULE_DIR}_${ASM_SUB_DIR}.a"
+			else
+				$LD -r $ASM_OBJ_FILES -o $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.o
+				FF_C_MERGE_FILES="$FF_C_MERGE_FILES $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.o"
+			fi
         fi
     done
 done
 
+CURRETN_PATH=$(pwd)
+cd $FF_PREFIX
+FF_C_MERGE_COMMAND=
+if [ $FF_MERGE_O_A == 1 ]; then
+	FF_C_MERGE_COMMAND="-Wl,--whole-archive $FF_C_MERGE_FILES -Wl,--no-whole-archive"
+else
+	FF_C_MERGE_COMMAND="$FF_C_MERGE_FILES"
+fi
+
 $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
     -Wl,-soname,libijkffmpeg.so \
-    $FF_C_OBJ_FILES \
-    $FF_ASM_OBJ_FILES \
+	$FF_C_MERGE_COMMAND \
     $FF_DEP_LIBS \
+	-fvisibility=hidden \
+	-fvisibility-inlines-hidden \
+	-rdynamic \
+	-O3 \
+	-Wl,-s	\
+	-Wl,-E \
     -o $FF_PREFIX/libijkffmpeg.so
+	
+if [ $FF_MERGE_O_A == 1 ]; then
+	rm -f $FF_PREFIX/*.a
+else
+	rm -f $FF_PREFIX/*.o
+fi
 
+cd $CURRETN_PATH
+
+# $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
+   # -Wl,-soname,libijkffmpeg.so \
+   # $FF_C_OBJ_FILES \
+   # $FF_ASM_OBJ_FILES \
+   # $FF_DEP_LIBS \
+   # -o $FF_PREFIX/libijkffmpeg.so
+	
 mysedi() {
     f=$1
     exp=$2

@@ -66,14 +66,14 @@ case "$FF_TARGET" in
     ;;
     x86|x86_64)
         echo_archs $FF_TARGET $FF_TARGET_EXTRA
-        sh tools/do-compile-ffmpeg.sh $FF_TARGET $FF_TARGET_EXTRA
+        sh tools/do-compile-ffmpeg.sh $FF_TARGET $FF_TARGET_EXTRA $UNI_BUILD_ROOT
         echo_nextstep_help
     ;;
     all32)
         echo_archs $FF_ACT_ARCHS_32
         for ARCH in $FF_ACT_ARCHS_32
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA
+            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
         done
         echo_nextstep_help
     ;;
@@ -81,7 +81,7 @@ case "$FF_TARGET" in
         echo_archs $FF_ACT_ARCHS_64
         for ARCH in $FF_ACT_ARCHS_64
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA
+            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
         done
         echo_nextstep_help
     ;;
