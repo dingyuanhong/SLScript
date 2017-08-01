@@ -20,7 +20,7 @@
 # http://git.videolan.org/?p=vlc-ports/android.git;a=summary
 
 #----------
-UNI_BUILD_ROOT=`pwd`
+UNI_BUILD_ROOT=$(pwd)
 FF_TARGET=$1
 FF_TARGET_EXTRA=$2
 set -e
@@ -62,18 +62,21 @@ echo_nextstep_help() {
 case "$FF_TARGET" in
     "")
         echo_archs x86
-        sh tools/do-compile-ffmpeg.sh x86
+		cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-x86
+        sh tools/do-compile-ffmpeg-win.sh x86 $UNI_BUILD_ROOT $FF_TARGET_EXTRA 
     ;;
     x86|x86_64)
         echo_archs $FF_TARGET $FF_TARGET_EXTRA
-        sh tools/do-compile-ffmpeg.sh $FF_TARGET $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+		cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$FF_TARGET
+        sh tools/do-compile-ffmpeg-win.sh $FF_TARGET $UNI_BUILD_ROOT $FF_TARGET_EXTRA 
         echo_nextstep_help
     ;;
     all32)
         echo_archs $FF_ACT_ARCHS_32
         for ARCH in $FF_ACT_ARCHS_32
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+			cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$ARCH
+            sh tools/do-compile-ffmpeg-win.sh $ARCH $UNI_BUILD_ROOT $FF_TARGET_EXTRA 
         done
         echo_nextstep_help
     ;;
@@ -81,7 +84,8 @@ case "$FF_TARGET" in
         echo_archs $FF_ACT_ARCHS_64
         for ARCH in $FF_ACT_ARCHS_64
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+			cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$ARCH
+            sh tools/do-compile-ffmpeg-win.sh $ARCH $UNI_BUILD_ROOT $FF_TARGET_EXTRA 
         done
         echo_nextstep_help
     ;;

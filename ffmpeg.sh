@@ -21,9 +21,10 @@ echo '::'$EXTERA
 makedir $EXTERA
 
 cd $EXTERA
-echo "::wget jpeg"
+echo "::wget ffmpeg"
 if [ ! -f ffmpeg-2.7.7.tar.gz ]
 then
+	
 	wget https://ffmpeg.org/releases/ffmpeg-2.7.7.tar.gz
 fi
 
@@ -33,5 +34,5 @@ cd ffmpeg-2.7.7
 export FFMPEG_ROOT=$(pwd)
 
 cd $ROOT/ffmpeg
-
+echo "::compile"
 ./compile-ffmpeg-win.sh
