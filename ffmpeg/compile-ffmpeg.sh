@@ -58,6 +58,9 @@ echo_nextstep_help() {
     echo "sh compile-ijk.sh "
 }
 
+chmod +x tools/*.sh
+chmod +x config/*.sh
+
 #----------
 case "$FF_TARGET" in
     "")

@@ -55,7 +55,7 @@ FF_CFG_FLAGS=
 #附加依赖库
 FF_EXTRA_CFLAGS=
 FF_EXTRA_LDFLAGS=
-FF_EXTRA_CXXLDFLAGS=
+FF_EXTRA_CXXLDFLAGS=""
 FF_EXTRA_LIBS=
 
 #模块列表
@@ -80,7 +80,7 @@ case "$FF_BUILD_OPT" in
     ;;
     *)
         FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-debug"
         FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-small"
     ;;
 esac
@@ -189,6 +189,61 @@ else
     exit 1
 fi
 
+#--------------------附加库
+FF_DEP_OPENSSL_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/include
+FF_DEP_OPENSSL_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/lib
+FF_DEP_LIBSOXR_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/include
+FF_DEP_LIBSOXR_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/lib
+
+FF_DEP_LIBSTAGEFRIGHT=false
+
+# with openssl
+if [ -f "${FF_DEP_OPENSSL_LIB}/libssl.a" ]; then
+    echo "OpenSSL detected"
+# FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-nonfree"
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-openssl"
+
+    FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_OPENSSL_INC}"
+    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_OPENSSL_LIB} -lssl -lcrypto"
+fi
+
+if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
+    echo "libsoxr detected"
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libsoxr"
+
+    FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_LIBSOXR_INC}"
+    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
+fi
+
+# with libstagefright
+if [ FF_DEP_LIBSTAGEFRIGHT == true ]; then
+    ANDROID_SOURCE=$(pwd)/../android-source
+    ANDROID_LIBS=$(pwd)/../android-libs
+    ANDROID_STD=$NDK/sources/cxx-stl/gnu-libstdc++/4.9/
+    echo "Fetching Android system headers"
+    git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_frameworks_base.git $ANDROID_SOURCE/frameworks/base
+    git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_system_core.git $ANDROID_SOURCE/system/core
+    unzip ../update-cm-7.0.3-N1-signed.zip system/lib/* -d../
+    mv ../system/lib $ANDROID_LIBS
+    rmdir ../system
+
+    echo "libstagefright detected"
+    ABI="armeabi"
+    if [ "$FF_ARCH" == "armv7a" ]; then
+        ABI="armeabi-v7a"
+    fi
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libstagefright-h264 --enable-decoder=libstagefright-h264"
+
+    FF_EXTRA_CFLAGS="-I$ANDROID_SOURCE/frameworks/base/include -I$ANDROID_SOURCE/system/core/include"
+    FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_SOURCE/frameworks/base/media/libstagefright"
+    FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_SOURCE/frameworks/base/include/media/stagefright/openmax"
+    FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_STD/include -I$ANDROID_STD/libs/$ABI/include"
+
+    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$ANDROID_LIBS -Wl,-rpath-link,$ANDROID_LIBS -L$ANDROID_STD/libs/$ABI"
+
+    FF_EXTRA_CXXLDFLAGS="$FF_EXTRA_CXXLDFLAGS -Wno-multichar -fno-exceptions -fno-rtti"
+fi
+
 if [ ! -d $FF_SOURCE ]; then
     echo ""
     echo "!! ERROR"
@@ -265,31 +320,6 @@ export COMMON_FF_CFG_FLAGS=
 
 echo $COMMON_FF_CFG_FLAGS
 FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
-
-
-#--------------------附加库
-FF_DEP_OPENSSL_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/include
-FF_DEP_OPENSSL_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/lib
-FF_DEP_LIBSOXR_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/include
-FF_DEP_LIBSOXR_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/lib
-
-# with openssl
-if [ -f "${FF_DEP_OPENSSL_LIB}/libssl.a" ]; then
-    echo "OpenSSL detected"
-# FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-nonfree"
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-openssl"
-
-    FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_OPENSSL_INC}"
-    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_OPENSSL_LIB} -lssl -lcrypto"
-fi
-
-if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
-    echo "libsoxr detected"
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libsoxr"
-
-    FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_LIBSOXR_INC}"
-    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
-fi
 
 #--------------------
 # Standard options:
@@ -394,32 +424,29 @@ else
 	FF_C_MERGE_COMMAND="$FF_C_MERGE_FILES"
 fi
 
-$CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
-    -Wl,-soname,libijkffmpeg.so \
-	$FF_C_MERGE_COMMAND \
-    $FF_EXTRA_LIBS \
-	-fvisibility=hidden \
-	-fvisibility-inlines-hidden \
-	-rdynamic \
-	-O3 \
-	-Wl,-s	\
-	-Wl,-E \
-    -o $FF_PREFIX/libijkffmpeg.so
+# $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
+#     -Wl,-soname,libijkffmpeg.so \
+# 	$FF_C_MERGE_COMMAND \
+#     $FF_EXTRA_LIBS \
+# 	-fvisibility=hidden \
+# 	-fvisibility-inlines-hidden \
+# 	-rdynamic \
+# 	-O3 \
+# 	-Wl,-s	\
+# 	-Wl,-E \
+#     -o $FF_PREFIX/libijkffmpeg.so
 	
-if [ $FF_MERGE_O_A == 1 ]; then
-	rm -f $FF_PREFIX/*.a
-else
-	rm -f $FF_PREFIX/*.o
-fi
+rm -f $FF_PREFIX/*.a
+rm -f $FF_PREFIX/*.o
 
 cd $CURRETN_PATH
 
-# $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
-   # -Wl,-soname,libijkffmpeg.so \
-   # $FF_C_OBJ_FILES \
-   # $FF_ASM_OBJ_FILES \
-   # $FF_EXTRA_LIBS \
-   # -o $FF_PREFIX/libijkffmpeg.so
+$CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
+   -Wl,-soname,libijkffmpeg.so \
+   $FF_C_OBJ_FILES \
+   $FF_ASM_OBJ_FILES \
+   $FF_EXTRA_LIBS \
+   -o $FF_PREFIX/libijkffmpeg.so
 
 echo ""
 echo "--------------------"
