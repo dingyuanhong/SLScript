@@ -29,8 +29,8 @@ set -e
 #--------------------
 # common defines
 FF_ARCH=$1
-FF_BUILD_OPT=$2
-FF_BUILD_ROOT=$3
+FF_BUILD_ROOT=$2
+FF_BUILD_OPT=$3
 
 echo "FF_ARCH=$FF_ARCH"
 echo "FF_BUILD_OPT=$FF_BUILD_OPT"
@@ -46,25 +46,44 @@ fi
 
 FF_ANDROID_PLATFORM=android-9
 
-
 FF_BUILD_NAME=
 FF_SOURCE=
 FF_CROSS_PREFIX=
-FF_DEP_OPENSSL_INC=
-FF_DEP_OPENSSL_LIB=
 
-FF_DEP_LIBSOXR_INC=
-FF_DEP_LIBSOXR_LIB=
-
+#配置表
 FF_CFG_FLAGS=
-
+#附加依赖库
 FF_EXTRA_CFLAGS=
 FF_EXTRA_LDFLAGS=
-FF_DEP_LIBS=
+FF_EXTRA_CXXLDFLAGS=
+FF_EXTRA_LIBS=
 
+#模块列表
 FF_MODULE_DIRS="compat libavcodec libavfilter libavformat libavutil libswresample libswscale"
 FF_ASSEMBLER_SUB_DIRS=
 
+
+#配置参数
+if [ "$FF_ARCH" = "x86" ]; then
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-asm"
+else
+    # Optimization options (experts only):
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-asm"
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-inline-asm"
+fi
+
+case "$FF_BUILD_OPT" in
+    debug)
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-optimizations"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-small"
+    ;;
+    *)
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-small"
+    ;;
+esac
 
 #--------------------
 echo ""
@@ -184,10 +203,6 @@ FF_MAKE_TOOLCHAIN_FLAGS="$FF_MAKE_TOOLCHAIN_FLAGS --install-dir=$FF_TOOLCHAIN_PA
 
 FF_SYSROOT=$FF_TOOLCHAIN_PATH/sysroot
 FF_PREFIX=$FF_BUILD_ROOT/build/$FF_BUILD_NAME/output
-FF_DEP_OPENSSL_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/include
-FF_DEP_OPENSSL_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/lib
-FF_DEP_LIBSOXR_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/include
-FF_DEP_LIBSOXR_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/lib
 
 case "$UNAME_S" in
     CYGWIN_NT-*)
@@ -223,7 +238,7 @@ export LD=${FF_CROSS_PREFIX}-ld
 export AR=${FF_CROSS_PREFIX}-ar
 export STRIP=${FF_CROSS_PREFIX}-strip
 
-FF_CFLAGS="-O3 -Wall -pipe \
+FF_CFLAGS="$FF_CFLAGS -O3 -Wall -pipe \
     -std=c99 \
     -ffast-math \
     -fstrict-aliasing -Werror=strict-aliasing \
@@ -239,11 +254,25 @@ FF_CFLAGS="-O3 -Wall -pipe \
 # not necessary
 #FF_CFLAGS="$FF_CFLAGS -finline-limit=300"
 
+
+#--------------------
+echo ""
+echo "--------------------"
+echo "[*] check ffmpeg config"
+echo "--------------------"
 export COMMON_FF_CFG_FLAGS=
 . ./config/module.sh
 
+echo $COMMON_FF_CFG_FLAGS
+FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
 
-#--------------------
+
+#--------------------附加库
+FF_DEP_OPENSSL_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/include
+FF_DEP_OPENSSL_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/lib
+FF_DEP_LIBSOXR_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/include
+FF_DEP_LIBSOXR_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/lib
+
 # with openssl
 if [ -f "${FF_DEP_OPENSSL_LIB}/libssl.a" ]; then
     echo "OpenSSL detected"
@@ -251,7 +280,7 @@ if [ -f "${FF_DEP_OPENSSL_LIB}/libssl.a" ]; then
     FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-openssl"
 
     FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_OPENSSL_INC}"
-    FF_DEP_LIBS="$FF_DEP_LIBS -L${FF_DEP_OPENSSL_LIB} -lssl -lcrypto"
+    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_OPENSSL_LIB} -lssl -lcrypto"
 fi
 
 if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
@@ -259,10 +288,8 @@ if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
     FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libsoxr"
 
     FF_CFLAGS="$FF_CFLAGS -I${FF_DEP_LIBSOXR_INC}"
-    FF_DEP_LIBS="$FF_DEP_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
+    FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
 fi
-
-FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
 
 #--------------------
 # Standard options:
@@ -274,27 +301,6 @@ FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-cross-compile"
 FF_CFG_FLAGS="$FF_CFG_FLAGS --target-os=linux"
 FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-pic"
 # FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-symver"
-
-if [ "$FF_ARCH" = "x86" ]; then
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-asm"
-else
-    # Optimization options (experts only):
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-asm"
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-inline-asm"
-fi
-
-case "$FF_BUILD_OPT" in
-    debug)
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-optimizations"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-small"
-    ;;
-    *)
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-small"
-    ;;
-esac
 
 #--------------------
 echo ""
@@ -308,7 +314,8 @@ else
     which $CC
     ./configure $FF_CFG_FLAGS \
         --extra-cflags="$FF_CFLAGS $FF_EXTRA_CFLAGS" \
-        --extra-ldflags="$FF_DEP_LIBS $FF_EXTRA_LDFLAGS"
+        --extra-ldflags="$FF_EXTRA_LIBS $FF_EXTRA_LDFLAGS"
+		--extra-ldflags="$FF_EXTRA_CXXLDFLAGS"
     make clean
 fi
 
@@ -330,6 +337,11 @@ echo "[*] link ffmpeg"
 echo "--------------------"
 echo $FF_EXTRA_LDFLAGS
 
+
+echo ""
+echo "--------------------"
+echo "[*] link ffmpeg object"
+echo "--------------------"
 FF_MERGE_O_A=1
 FF_C_OBJ_FILES=
 FF_ASM_OBJ_FILES=
@@ -368,6 +380,11 @@ do
     done
 done
 
+
+echo ""
+echo "--------------------"
+echo "[*] link ffmpeg so"
+echo "--------------------"
 CURRETN_PATH=$(pwd)
 cd $FF_PREFIX
 FF_C_MERGE_COMMAND=
@@ -380,7 +397,7 @@ fi
 $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
     -Wl,-soname,libijkffmpeg.so \
 	$FF_C_MERGE_COMMAND \
-    $FF_DEP_LIBS \
+    $FF_EXTRA_LIBS \
 	-fvisibility=hidden \
 	-fvisibility-inlines-hidden \
 	-rdynamic \
@@ -401,9 +418,14 @@ cd $CURRETN_PATH
    # -Wl,-soname,libijkffmpeg.so \
    # $FF_C_OBJ_FILES \
    # $FF_ASM_OBJ_FILES \
-   # $FF_DEP_LIBS \
+   # $FF_EXTRA_LIBS \
    # -o $FF_PREFIX/libijkffmpeg.so
-	
+
+echo ""
+echo "--------------------"
+echo "[*] link ffmpeg resource"
+echo "--------------------"
+   
 mysedi() {
     f=$1
     exp=$2

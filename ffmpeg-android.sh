@@ -1,8 +1,5 @@
 #!/bin/sh
 
-#vs2015±‡“Î≥Ã–Ú
-export DEVENV="devenv.exe"
-
 function makedir()
 {
 	p=$1
@@ -15,6 +12,10 @@ function makedir()
 export ROOT=$(pwd)
 makedir bin
 export OUTPUT=$ROOT/bin
+
+#export ANDROID_SDK=D:/AndroidSDK
+export ANDROID_NDK=D:/AndroidSDK/android-ndk-r10e
+#export ANDROID_NDK=D:/AndroidSDK/ndk-bundle
 
 EXTERA=extra
 echo '::'$EXTERA
@@ -36,4 +37,4 @@ export FFMPEG_ROOT=$(pwd)
 
 cd $ROOT/ffmpeg
 echo "::compile"
-./compile-ffmpeg-win.sh
+./compile-ffmpeg.sh armv7a

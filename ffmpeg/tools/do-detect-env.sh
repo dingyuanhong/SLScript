@@ -100,7 +100,8 @@ case "$UNAME_S" in
         echo "Cygwin temp prefix=$IJK_WIN_TEMP/"
     ;;
     MINGW32_NT-*)
-        IJK_WIN_TEMP="$(cygpath -am /tmp)"
+        #IJK_WIN_TEMP="$(cygpath -am /tmp)"
+		IJK_WIN_TEMP="E:/tmp"
         echo $IJK_WIN_TEMP
         export TEMPDIR=$IJK_WIN_TEMP/
 

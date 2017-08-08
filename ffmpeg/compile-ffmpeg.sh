@@ -62,18 +62,33 @@ echo_nextstep_help() {
 case "$FF_TARGET" in
     "")
         echo_archs armv7a
-        sh tools/do-compile-ffmpeg.sh armv7a
+		if [ ! -d $UNI_BUILD_ROOT/ffmpeg-armv7a ]; then
+			mkdir $UNI_BUILD_ROOT/ffmpeg-armv7a
+			cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-armv7a
+			sh prepare.sh armv7a
+		fi
+        sh tools/do-compile-ffmpeg.sh armv7a $UNI_BUILD_ROOT
     ;;
     armv5|armv7a|arm64|x86|x86_64)
         echo_archs $FF_TARGET $FF_TARGET_EXTRA
-        sh tools/do-compile-ffmpeg.sh $FF_TARGET $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+		if [ ! -d $UNI_BUILD_ROOT/ffmpeg-$FF_TARGET ] ; then
+			mkdir $UNI_BUILD_ROOT/ffmpeg-$FF_TARGET
+			cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$FF_TARGET
+			sh prepare.sh $FF_TARGET
+		fi
+        sh tools/do-compile-ffmpeg.sh $FF_TARGET $UNI_BUILD_ROOT $FF_TARGET_EXTRA
         echo_nextstep_help
     ;;
     all32)
         echo_archs $FF_ACT_ARCHS_32
         for ARCH in $FF_ACT_ARCHS_32
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+			if [ ! -d $UNI_BUILD_ROOT/ffmpeg-$ARCH ] ; then
+				mkdir $UNI_BUILD_ROOT/ffmpeg-$ARCH
+				cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$ARCH
+				sh prepare.sh $ARCH
+			fi
+            sh tools/do-compile-ffmpeg.sh $ARCH $UNI_BUILD_ROOT $FF_TARGET_EXTRA
         done
         echo_nextstep_help
     ;;
@@ -81,7 +96,12 @@ case "$FF_TARGET" in
         echo_archs $FF_ACT_ARCHS_64
         for ARCH in $FF_ACT_ARCHS_64
         do
-            sh tools/do-compile-ffmpeg.sh $ARCH $FF_TARGET_EXTRA $UNI_BUILD_ROOT
+			if [ ! -d $UNI_BUILD_ROOT/ffmpeg-$ARCH ] ; then
+				mkdir $UNI_BUILD_ROOT/ffmpeg-$ARCH
+				cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-$ARCH
+				sh prepare.sh $ARCH
+			fi
+            sh tools/do-compile-ffmpeg.sh $ARCH $UNI_BUILD_ROOT $FF_TARGET_EXTRA
         done
         echo_nextstep_help
     ;;
@@ -91,6 +111,7 @@ case "$FF_TARGET" in
         do
             if [ -d ffmpeg-$ARCH ]; then
                 cd ffmpeg-$ARCH && git clean -xdf && cd -
+				rm -rf ffmpeg-$ARCH
             fi
         done
         rm -rf ./build/ffmpeg-*
