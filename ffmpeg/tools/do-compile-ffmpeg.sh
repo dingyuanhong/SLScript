@@ -189,13 +189,24 @@ else
     exit 1
 fi
 
+echo ""
+echo "--------------------"
+echo "[*] check module"
+echo "--------------------"
+export COMMON_FF_CFG_FLAGS=$(./config/module.sh)
+
+echo $COMMON_FF_CFG_FLAGS
+FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
+
+echo ""
+echo "--------------------"
+echo "[*] check extern module"
+echo "--------------------"
 #--------------------附加库
 FF_DEP_OPENSSL_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/include
 FF_DEP_OPENSSL_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_OPENSSL/output/lib
 FF_DEP_LIBSOXR_INC=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/include
 FF_DEP_LIBSOXR_LIB=$FF_BUILD_ROOT/build/$FF_BUILD_NAME_LIBSOXR/output/lib
-
-FF_DEP_LIBSTAGEFRIGHT=false
 
 # with openssl
 if [ -f "${FF_DEP_OPENSSL_LIB}/libssl.a" ]; then
@@ -215,24 +226,34 @@ if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
     FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
 fi
 
+FF_DEP_LIBSTAGEFRIGHT=true
 # with libstagefright
-if [ FF_DEP_LIBSTAGEFRIGHT == true ]; then
+if [ ${FF_DEP_LIBSTAGEFRIGHT} == true ]; then
     ANDROID_SOURCE=$(pwd)/../android-source
     ANDROID_LIBS=$(pwd)/../android-libs
-    ANDROID_STD=$NDK/sources/cxx-stl/gnu-libstdc++/4.9/
+    ANDROID_STD=$ANDROID_NDK/sources/cxx-stl/gnu-libstdc++/4.9/
     echo "Fetching Android system headers"
-    git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_frameworks_base.git $ANDROID_SOURCE/frameworks/base
-    git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_system_core.git $ANDROID_SOURCE/system/core
-    unzip ../update-cm-7.0.3-N1-signed.zip system/lib/* -d../
-    mv ../system/lib $ANDROID_LIBS
-    rmdir ../system
+    if [ ! -d $ANDROID_SOURCE/frameworks/base ]; then
+        git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_frameworks_base.git $ANDROID_SOURCE/frameworks/base
+        git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_system_core.git $ANDROID_SOURCE/system/core
+    fi
+    if [ ! -d $ANDROID_LIBS ];then
+        unzip ./update-cm-7.0.3-N1-signed.zip system/lib/* -d../
+        mv ../system/lib $ANDROID_LIBS
+        rmdir ../system
+    fi
 
     echo "libstagefright detected"
-    ABI="armeabi"
     if [ "$FF_ARCH" == "armv7a" ]; then
         ABI="armeabi-v7a"
+    elif [ "$FF_ARCH" == "arm64" ]; then
+        ABI="arm64-v8a"
+    elif [ "$FF_ARCH" == "armv5" ]; then
+        ABI="armeabi"
+    else
+        ABI=$FF_ARCH
     fi
-    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libstagefright-h264 --enable-decoder=libstagefright-h264"
+    FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-libstagefright-h264 --enable-decoder=libstagefright_h264"
 
     FF_EXTRA_CFLAGS="-I$ANDROID_SOURCE/frameworks/base/include -I$ANDROID_SOURCE/system/core/include"
     FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_SOURCE/frameworks/base/media/libstagefright"
@@ -247,6 +268,9 @@ if [ FF_DEP_LIBSTAGEFRIGHT == true ]; then
     FF_EXTRA_LDFLAGS="$FF_EXTRA_LDFLAGS -fuse-ld=bfd"
 
     FF_EXTRA_CXXLDFLAGS="$FF_EXTRA_CXXLDFLAGS -Wno-multichar -fno-exceptions -fno-rtti -DHAVE_PTHREADS"
+
+    cp -P ${ANDROID_SOURCE}/frameworks/base/media/libstagefright/MediaBufferGroup.cpp $FF_SOURCE/libavcodec/
+    cp -P ${ANDROID_SOURCE}/frameworks/base/include/media/stagefright/MediaBufferGroup.h $FF_SOURCE/libavcodec/
 fi
 
 if [ ! -d $FF_SOURCE ]; then
@@ -294,6 +318,7 @@ echo "--------------------"
 export PATH=$FF_TOOLCHAIN_PATH/bin/:$PATH
 #export CC="ccache ${FF_CROSS_PREFIX}-gcc"
 export CC="${FF_CROSS_PREFIX}-gcc"
+export CXX="${FF_CROSS_PREFIX}-g++"
 export LD=${FF_CROSS_PREFIX}-ld
 export AR=${FF_CROSS_PREFIX}-ar
 export STRIP=${FF_CROSS_PREFIX}-strip
@@ -320,14 +345,10 @@ echo ""
 echo "--------------------"
 echo "[*] check ffmpeg config"
 echo "--------------------"
-export COMMON_FF_CFG_FLAGS=
-. ./config/module.sh
-
-echo $COMMON_FF_CFG_FLAGS
-FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
 
 #--------------------
 # Standard options:
+FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-shared"
 FF_CFG_FLAGS="$FF_CFG_FLAGS --prefix=$FF_PREFIX"
 
 # Advanced options (experts only):
@@ -343,16 +364,18 @@ echo "--------------------"
 echo "[*] configurate ffmpeg"
 echo "--------------------"
 cd $FF_SOURCE
+echo $FF_CFG_FLAGS
 if [ -f "./config.h" ]; then
     echo 'reuse configure'
-else
+fi
     which $CC
+    ./configure --help > ../configure.txt
     ./configure $FF_CFG_FLAGS \
         --extra-cflags="$FF_CFLAGS $FF_EXTRA_CFLAGS" \
-        --extra-ldflags="$FF_EXTRA_LIBS $FF_EXTRA_LDFLAGS"
-		--extra-ldflags="$FF_EXTRA_CXXLDFLAGS"
+        --extra-ldflags="$FF_EXTRA_LIBS $FF_EXTRA_LDFLAGS" \
+		--extra-cxxflags="$FF_EXTRA_CXXLDFLAGS"
     make clean
-fi
+#fi
 
 #--------------------
 echo ""
@@ -360,6 +383,7 @@ echo "--------------------"
 echo "[*] compile ffmpeg"
 echo "--------------------"
 cp config.* $FF_PREFIX
+make clean
 make $FF_MAKE_FLAGS > /dev/null
 make install
 mkdir -p $FF_PREFIX/include/libffmpeg
@@ -377,7 +401,7 @@ echo ""
 echo "--------------------"
 echo "[*] link ffmpeg object"
 echo "--------------------"
-FF_MERGE_O_A=1
+FF_MERGE_O_A="no"  #OBJ A
 FF_C_OBJ_FILES=
 FF_ASM_OBJ_FILES=
 FF_C_MERGE_FILES=
@@ -388,10 +412,10 @@ do
 		echo "link $MODULE_DIR/*.o"
 		FF_C_OBJ_FILES="$FF_C_OBJ_FILES $C_OBJ_FILES"
 		
-		if [ $FF_MERGE_O_A == 1 ]; then
+		if [ $FF_MERGE_O_A == "OBJ" ]; then
 			$AR rcs $FF_PREFIX/lib${MODULE_DIR}.a $C_OBJ_FILES
 			FF_C_MERGE_FILES="$FF_C_MERGE_FILES lib${MODULE_DIR}.a"
-		else
+		elif [ $FF_MERGE_O_A == "A" ]; then
 			$LD -r $C_OBJ_FILES -o $FF_PREFIX/lib${MODULE_DIR}.o
 			FF_C_MERGE_FILES="$FF_C_MERGE_FILES $FF_PREFIX/lib${MODULE_DIR}.o"
 		fi
@@ -404,10 +428,10 @@ do
 			echo "link $MODULE_DIR/$ASM_SUB_DIR/*.o"
 			FF_ASM_OBJ_FILES="$FF_ASM_OBJ_FILES $ASM_OBJ_FILES"
 			
-			if [ $FF_MERGE_O_A == 1 ]; then
+			if [ $FF_MERGE_O_A == "OBJ" ]; then
 				$AR rcs $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.a $ASM_OBJ_FILES
 				FF_C_MERGE_FILES="$FF_C_MERGE_FILES lib${MODULE_DIR}_${ASM_SUB_DIR}.a"
-			else
+			elif [ $FF_MERGE_O_A == "A" ]; then
 				$LD -r $ASM_OBJ_FILES -o $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.o
 				FF_C_MERGE_FILES="$FF_C_MERGE_FILES $FF_PREFIX/lib${MODULE_DIR}_${ASM_SUB_DIR}.o"
 			fi
@@ -420,14 +444,14 @@ echo ""
 echo "--------------------"
 echo "[*] link ffmpeg so"
 echo "--------------------"
-CURRETN_PATH=$(pwd)
-cd $FF_PREFIX
-FF_C_MERGE_COMMAND=
-if [ $FF_MERGE_O_A == 1 ]; then
-	FF_C_MERGE_COMMAND="-Wl,--whole-archive $FF_C_MERGE_FILES -Wl,--no-whole-archive"
-else
-	FF_C_MERGE_COMMAND="$FF_C_MERGE_FILES"
-fi
+# CURRETN_PATH=$(pwd)
+# cd $FF_PREFIX
+# FF_C_MERGE_COMMAND=
+# if [ $FF_MERGE_O_A == 1 ]; then
+# 	FF_C_MERGE_COMMAND="-Wl,--whole-archive $FF_C_MERGE_FILES -Wl,--no-whole-archive"
+# else
+# 	FF_C_MERGE_COMMAND="$FF_C_MERGE_FILES"
+# fi
 
 # $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
 #     -Wl,-soname,libijkffmpeg.so \
@@ -441,17 +465,21 @@ fi
 # 	-Wl,-E \
 #     -o $FF_PREFIX/libijkffmpeg.so
 	
-rm -f $FF_PREFIX/*.a
-rm -f $FF_PREFIX/*.o
+# rm -f $FF_PREFIX/*.a
+# rm -f $FF_PREFIX/*.o
 
-cd $CURRETN_PATH
+# cd $CURRETN_PATH
 
-$CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
-   -Wl,-soname,libijkffmpeg.so \
-   $FF_C_OBJ_FILES \
-   $FF_ASM_OBJ_FILES \
-   $FF_EXTRA_LIBS \
-   -o $FF_PREFIX/libijkffmpeg.so
+# $CXX -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
+#    -Wl,-soname,libijkffmpeg.so \
+#    $FF_C_OBJ_FILES \
+#    $FF_ASM_OBJ_FILES \
+#    $FF_CFLAGS \
+#    $FF_EXTRA_CFLAGS \
+#    $FF_EXTRA_LDFLAGS \
+#    $FF_EXTRA_CXXLDFLAGS \
+#    $FF_EXTRA_LIBS \
+#    -o $FF_PREFIX/libijkffmpeg.so
 
 echo ""
 echo "--------------------"
