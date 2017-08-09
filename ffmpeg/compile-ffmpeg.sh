@@ -64,13 +64,13 @@ chmod +x config/*.sh
 #----------
 case "$FF_TARGET" in
     "")
-        echo_archs armv7a
+        echo_archs armv7a $FF_TARGET_EXTRA
 		if [ ! -d $UNI_BUILD_ROOT/ffmpeg-armv7a ]; then
 			mkdir $UNI_BUILD_ROOT/ffmpeg-armv7a
 			cp -r -f $FFMPEG_ROOT/* $UNI_BUILD_ROOT/ffmpeg-armv7a
 			sh prepare.sh armv7a
 		fi
-        sh tools/do-compile-ffmpeg.sh armv7a $UNI_BUILD_ROOT
+        sh tools/do-compile-ffmpeg.sh armv7a $UNI_BUILD_ROOT $FF_TARGET_EXTRA
     ;;
     armv5|armv7a|arm64|x86|x86_64)
         echo_archs $FF_TARGET $FF_TARGET_EXTRA
