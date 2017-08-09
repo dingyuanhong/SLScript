@@ -238,10 +238,15 @@ if [ FF_DEP_LIBSTAGEFRIGHT == true ]; then
     FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_SOURCE/frameworks/base/media/libstagefright"
     FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_SOURCE/frameworks/base/include/media/stagefright/openmax"
     FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -I$ANDROID_STD/include -I$ANDROID_STD/libs/$ABI/include"
+    #用于修正代码在高版本可用
+    FF_EXTRA_CFLAGS="$FF_EXTRA_CFLAGS -fPIC -DHAVE_PTHREADS"
 
-    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$ANDROID_LIBS -Wl,-rpath-link,$ANDROID_LIBS -L$ANDROID_STD/libs/$ABI"
+    FF_EXTRA_LDFLAGS="$FF_EXTRA_LDFLAGS -L$ANDROID_LIBS -Wl,-rpath-link,$ANDROID_LIBS -L$ANDROID_STD/libs/$ABI"
+    #链接到库使得Android能正确加载
+    FF_EXTRA_LDFLAGS="$FF_EXTRA_LDFLAGS -lstagefright -lmedia -lstdc++ -lutils -lbinder -lgnustl_static -ldl"
+    FF_EXTRA_LDFLAGS="$FF_EXTRA_LDFLAGS -fuse-ld=bfd"
 
-    FF_EXTRA_CXXLDFLAGS="$FF_EXTRA_CXXLDFLAGS -Wno-multichar -fno-exceptions -fno-rtti"
+    FF_EXTRA_CXXLDFLAGS="$FF_EXTRA_CXXLDFLAGS -Wno-multichar -fno-exceptions -fno-rtti -DHAVE_PTHREADS"
 fi
 
 if [ ! -d $FF_SOURCE ]; then

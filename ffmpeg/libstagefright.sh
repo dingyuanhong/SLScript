@@ -14,4 +14,10 @@ chmod +x ./*.sh
 chmod +x ./*.mak
 chmod +x ./tools/*
 
-./tools/build_libstagefright clean
+echo "*:拷贝MediaBufferGroup.cpp 至ffmepg加入编译项目中，避免在Android项目中缺少符号"
+cp -P ../android-source/frameworks/base/media/libstagefright/MediaBufferGroup.cpp ./libavcodec/
+cp -P ../android-source/frameworks/base/include/media/stagefright/MediaBufferGroup.h ./libavcodec/
+
+echo "*:修改libavcodec/Makefile中778行为 OBJS-$'(CONFIG_LIBSTAGEFRIGHT_H264_DECODER)'+= libstagefright.o MediaBufferGroup.o"
+
+../build_libstagefright
