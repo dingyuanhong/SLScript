@@ -77,6 +77,7 @@ case "$FF_BUILD_OPT" in
         FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-optimizations"
         FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-debug"
         FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-small"
+        FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-stripping"
     ;;
     *)
         FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
@@ -326,9 +327,18 @@ export STRIP=${FF_CROSS_PREFIX}-strip
 FF_CFLAGS="$FF_CFLAGS -O3 -Wall -pipe \
     -std=c99 \
     -ffast-math \
-    -fstrict-aliasing -Werror=strict-aliasing \
     -Wno-psabi -Wa,--noexecstack \
-    -DANDROID -DNDEBUG"
+    -DANDROID"
+
+case "$FF_BUILD_OPT" in
+    debug)
+        FF_CFLAGS="$FF_CFLAGS -DDEBUG"
+    ;;
+    *)
+        FF_CFLAGS="$FF_CFLAGS -DNDEBUG \
+        -fstrict-aliasing -Werror=strict-aliasing"
+    ;;
+esac
 
 # cause av_strlcpy crash with gcc4.7, gcc4.8
 # -fmodulo-sched -fmodulo-sched-allow-regmoves

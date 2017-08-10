@@ -26,9 +26,9 @@ SYSROOT=$NDK/platforms/android-9/arch-arm
 # Expand the prebuilt/* path into the correct one
 TOOLCHAIN=`echo $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64`
 export PATH=$TOOLCHAIN/bin:$PATH
-ANDROID_SOURCE=../android-source
-ANDROID_LIBS=../android-libs
-ANDROID_STD=$NDK/sources/cxx-stl/gnu-libstdc++/4.9/
+ANDROID_SOURCE=$(pwd)/../android-source
+ANDROID_LIBS=$(pwd)/../android-libs
+ANDROID_STD=$NDK/sources/cxx-stl/gnu-libstdc++/4.9
 ABI="armeabi-v7a"
 
 rm -rf ../build/stagefright
@@ -37,7 +37,7 @@ mkdir -p ../build/stagefright
 DEST=../build/stagefright
 FLAGS="--target-os=linux --cross-prefix=arm-linux-androideabi- --arch=arm --cpu=armv7-a"
 FLAGS="$FLAGS --sysroot=$SYSROOT --enable-cross-compile --enable-shared"
-FLAGS="$FLAGS --disable-avdevice --disable-decoder=h264 --disable-decoder=h264_vdpau --enable-libstagefright-h264 --enable-decoder=libstagefright_h264"
+FLAGS="$FLAGS --disable-avdevice --disable-decoder=h264 --disable-decoder=h264_vdpau --enable-libstagefright-h264 --enable-decoder=libstagefright-h264"
 FLAGS="$FLAGS --disable-encoders --disable-muxers --disable-indevs"
 
 

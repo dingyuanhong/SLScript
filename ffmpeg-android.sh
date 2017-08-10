@@ -42,4 +42,4 @@ export FFMPEG_ROOT=$(pwd)
 cd $ROOT/ffmpeg
 echo "::compile"
 chmod +x ./*.sh
-./compile-ffmpeg.sh armv7a debug
+./compile-ffmpeg.sh armv7a
