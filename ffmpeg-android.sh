@@ -16,7 +16,10 @@ export OUTPUT=$ROOT/bin
 #export ANDROID_SDK=D:/AndroidSDK
 #export ANDROID_NDK=D:/AndroidSDK/android-ndk-r10e
 #export ANDROID_NDK=D:/AndroidSDK/ndk-bundle
-export ANDROID_NDK=/Users/cievon/Documents/AndroidSDK/android-ndk-r10e
+#mac
+#export ANDROID_NDK=/Users/cievon/Documents/AndroidSDK/android-ndk-r10e
+#linux
+export ANDROID_NDK=/data/wwwroot/android-ndk-r10e
 
 EXTERA=extra
 echo '::'$EXTERA

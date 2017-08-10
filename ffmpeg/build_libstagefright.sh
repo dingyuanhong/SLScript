@@ -1,43 +1,67 @@
 #!/bin/bash
 
+#PLATFORM=darwin
+#PLATFORM=linux
+case $(uname) in
+	"Linux")
+	PLATFORM=linux
+	;;
+	"Darwin")
+	PLATFORM=darwin
+	;;
+	*)
+	PLATFORM=windows
+	;;
+esac
+
 if [ "$NDK" = "" ]; then
     echo NDK variable not set, assuming ${HOME}/android-ndk
     export NDK=${HOME}/android-ndk
 fi
 
 echo "Fetching Android system headers"
-git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_frameworks_base.git ../android-source/frameworks/base
-git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_system_core.git ../android-source/system/core
+git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_frameworks_base.git ../../android-source/frameworks/base
+git clone --depth=1 --branch gingerbread-release https://github.com/CyanogenMod/android_system_core.git ../../android-source/system/core
 
 echo "Fetching Android libraries for linking"
 # Libraries from any froyo/gingerbread device/emulator should work
 # fine, since the symbols used should be available on most of them.
-if [ ! -d "../android-libs" ]; then
+if [ ! -d "../../android-libs" ]; then
     #if [ ! -f "../update-cm-7.0.3-N1-signed.zip" ]; then
         #wget http://download.cyanogenmod.com/get/update-cm-7.0.3-N1-signed.zip -P../
     #fi
     unzip ../update-cm-7.0.3-N1-signed.zip system/lib/* -d../
-    mv ../system/lib ../android-libs
+    mv ../system/lib ../../android-libs
     rmdir ../system
 fi
 
 
 SYSROOT=$NDK/platforms/android-9/arch-arm
 # Expand the prebuilt/* path into the correct one
-TOOLCHAIN=`echo $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64`
+TOOLCHAIN=`echo $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/${PLATFORM}-x86_64`
 export PATH=$TOOLCHAIN/bin:$PATH
-ANDROID_SOURCE=$(pwd)/../android-source
-ANDROID_LIBS=$(pwd)/../android-libs
+ANDROID_SOURCE=$(pwd)/../../android-source
+ANDROID_LIBS=$(pwd)/../../android-libs
 ANDROID_STD=$NDK/sources/cxx-stl/gnu-libstdc++/4.9
 ABI="armeabi-v7a"
-
+echo "libstagefright detected $ARCH"
+if [ "$ARCH" == "armv7a" ]; then
+	ABI="armeabi-v7a"
+elif [ "$ARCH" == "arm64" ]; then
+	ABI="arm64-v8a"
+elif [ "$ARCH" == "armv5" ]; then
+	ABI="armeabi"
+else
+	ABI=$ARCH
+fi
+	
 rm -rf ../build/stagefright
 mkdir -p ../build/stagefright
 
 DEST=../build/stagefright
 FLAGS="--target-os=linux --cross-prefix=arm-linux-androideabi- --arch=arm --cpu=armv7-a"
 FLAGS="$FLAGS --sysroot=$SYSROOT --enable-cross-compile --enable-shared"
-FLAGS="$FLAGS --disable-avdevice --disable-decoder=h264 --disable-decoder=h264_vdpau --enable-libstagefright-h264 --enable-decoder=libstagefright-h264"
+FLAGS="$FLAGS --disable-avdevice --disable-decoder=h264 --disable-decoder=h264_vdpau --enable-libstagefright-h264 --enable-decoder=libstagefright_h264"
 FLAGS="$FLAGS --disable-encoders --disable-muxers --disable-indevs"
 
 

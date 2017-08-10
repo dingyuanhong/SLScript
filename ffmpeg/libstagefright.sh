@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ARCH=$1
+export ARCH=$1
 
 #export ANDROID_NDK=D:/AndroidSDK/android-ndk-r10e
 #mac
@@ -25,8 +25,10 @@ chmod +x ./*.mak
 chmod +x ./tools/*
 
 echo "*:拷贝MediaBufferGroup.cpp 至ffmepg加入编译项目中，避免在Android项目中缺少符号"
-cp -P ../android-source/frameworks/base/media/libstagefright/MediaBufferGroup.cpp ./libavcodec/
-cp -P ../android-source/frameworks/base/include/media/stagefright/MediaBufferGroup.h ./libavcodec/
+cp -P ../../android-source/frameworks/base/media/libstagefright/MediaBufferGroup.cpp ./libavcodec/
+cp -P ../../android-source/frameworks/base/include/media/stagefright/MediaBufferGroup.h ./libavcodec/
+#cp -P ../../android-source/frameworks/base/media/libstagefright/OMXCodec.cpp ./libavcodec/
+#cp -P ../../android-source/frameworks/base/include/media/stagefright/OMXCodec.h ./libavcodec/
 
 echo "*:修改libavcodec/Makefile中778行为 OBJS-$'(CONFIG_LIBSTAGEFRIGHT_H264_DECODER)'+= libstagefright.o MediaBufferGroup.o"
 
