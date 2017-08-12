@@ -26,8 +26,8 @@ echo '::'$EXTERA
 makedir $EXTERA
 
 cd $EXTERA
-PACKET_NAME=ffmpeg-2.7.7
-#PACKET_NAME=ffmpeg-3.3.3
+#PACKET_NAME=ffmpeg-2.7.7
+PACKET_NAME=ffmpeg-3.3.3
 echo "::wget ffmpeg"
 if [ ! -f ${PACKET_NAME}.tar.gz ]
 then
@@ -45,4 +45,4 @@ export FFMPEG_ROOT=$(pwd)
 cd $ROOT/ffmpeg
 echo "::compile"
 chmod +x ./*.sh
-./compile-ffmpeg.sh armv7a
+./compile-ffmpeg.sh all

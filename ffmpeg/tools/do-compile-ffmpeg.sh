@@ -80,9 +80,11 @@ case "$FF_BUILD_OPT" in
         FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-stripping"
     ;;
     *)
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
+#       FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-optimizations"
         FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-debug"
-        FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-small"
+#       FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-small"
+		FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-optimizations"
+		FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-small"
     ;;
 esac
 
@@ -196,7 +198,7 @@ echo "[*] check module"
 echo "--------------------"
 export COMMON_FF_CFG_FLAGS=$(./config/module.sh)
 
-echo $COMMON_FF_CFG_FLAGS
+#echo $COMMON_FF_CFG_FLAGS
 FF_CFG_FLAGS="$FF_CFG_FLAGS $COMMON_FF_CFG_FLAGS"
 
 echo ""
@@ -227,7 +229,7 @@ if [ -f "${FF_DEP_LIBSOXR_LIB}/libsoxr.a" ]; then
     FF_EXTRA_LIBS="$FF_EXTRA_LIBS -L${FF_DEP_LIBSOXR_LIB} -lsoxr"
 fi
 
-FF_DEP_LIBSTAGEFRIGHT=true
+FF_DEP_LIBSTAGEFRIGHT=false
 # with libstagefright
 if [ ${FF_DEP_LIBSTAGEFRIGHT} == true ]; then
     ANDROID_SOURCE=$(pwd)/../android-source
@@ -296,7 +298,7 @@ case "$UNAME_S" in
     ;;
 esac
 
-
+rm -r -f $FF_PREFIX
 mkdir -p $FF_PREFIX
 # mkdir -p $FF_SYSROOT
 
@@ -319,12 +321,12 @@ echo "--------------------"
 export PATH=$FF_TOOLCHAIN_PATH/bin/:$PATH
 #export CC="ccache ${FF_CROSS_PREFIX}-gcc"
 export CC="${FF_CROSS_PREFIX}-gcc"
-export CXX="${FF_CROSS_PREFIX}-g++"
+#export CXX="${FF_CROSS_PREFIX}-g++"
 export LD=${FF_CROSS_PREFIX}-ld
 export AR=${FF_CROSS_PREFIX}-ar
 export STRIP=${FF_CROSS_PREFIX}-strip
 
-FF_CFLAGS="$FF_CFLAGS -O3 -Wall -pipe \
+FF_CFLAGS="$FF_CFLAGS -Wall -pipe \
     -std=c99 \
     -ffast-math \
     -Wno-psabi -Wa,--noexecstack \
@@ -335,7 +337,7 @@ case "$FF_BUILD_OPT" in
         FF_CFLAGS="$FF_CFLAGS -DDEBUG"
     ;;
     *)
-        FF_CFLAGS="$FF_CFLAGS -DNDEBUG \
+        FF_CFLAGS="$FF_CFLAGS -O1 -DNDEBUG \
         -fstrict-aliasing -Werror=strict-aliasing"
     ;;
 esac
@@ -364,7 +366,7 @@ FF_CFG_FLAGS="$FF_CFG_FLAGS --prefix=$FF_PREFIX"
 # Advanced options (experts only):
 FF_CFG_FLAGS="$FF_CFG_FLAGS --cross-prefix=${FF_CROSS_PREFIX}-"
 FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-cross-compile"
-FF_CFG_FLAGS="$FF_CFG_FLAGS --target-os=linux"
+FF_CFG_FLAGS="$FF_CFG_FLAGS --target-os=android"
 FF_CFG_FLAGS="$FF_CFG_FLAGS --enable-pic"
 # FF_CFG_FLAGS="$FF_CFG_FLAGS --disable-symver"
 
@@ -463,10 +465,14 @@ echo "--------------------"
 # 	FF_C_MERGE_COMMAND="$FF_C_MERGE_FILES"
 # fi
 
-# $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
+# $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack \
 #     -Wl,-soname,libijkffmpeg.so \
 # 	$FF_C_MERGE_COMMAND \
-#     $FF_EXTRA_LIBS \
+#   $FF_CFLAGS \
+#   $FF_EXTRA_CFLAGS \
+#   $FF_EXTRA_LDFLAGS \
+#   $FF_EXTRA_CXXLDFLAGS \
+#   $FF_EXTRA_LIBS \
 # 	-fvisibility=hidden \
 # 	-fvisibility-inlines-hidden \
 # 	-rdynamic \
@@ -480,16 +486,17 @@ echo "--------------------"
 
 # cd $CURRETN_PATH
 
-# $CXX -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack $FF_EXTRA_LDFLAGS \
-#    -Wl,-soname,libijkffmpeg.so \
-#    $FF_C_OBJ_FILES \
-#    $FF_ASM_OBJ_FILES \
-#    $FF_CFLAGS \
-#    $FF_EXTRA_CFLAGS \
-#    $FF_EXTRA_LDFLAGS \
-#    $FF_EXTRA_CXXLDFLAGS \
-#    $FF_EXTRA_LIBS \
-#    -o $FF_PREFIX/libijkffmpeg.so
+$CC -Xlinker -zmuldefs -lm -lz -fPIC -shared --sysroot=$FF_SYSROOT \
+   -Wl,--no-undefined -Wl,-z,noexecstack \
+   -Wl,-soname,libijkffmpeg.so \
+   $FF_C_OBJ_FILES \
+   $FF_ASM_OBJ_FILES \
+   $FF_CFLAGS \
+   $FF_EXTRA_CFLAGS \
+   $FF_EXTRA_LDFLAGS \
+   $FF_EXTRA_CXXLDFLAGS \
+   $FF_EXTRA_LIBS \
+   -o $FF_PREFIX/libijkffmpeg.so
 
 echo ""
 echo "--------------------"
