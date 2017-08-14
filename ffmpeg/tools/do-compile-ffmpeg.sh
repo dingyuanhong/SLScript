@@ -466,7 +466,7 @@ echo "--------------------"
 # fi
 
 # $CC -lm -lz -shared --sysroot=$FF_SYSROOT -Wl,--no-undefined -Wl,-z,noexecstack \
-#     -Wl,-soname,libijkffmpeg.so \
+#     -Wl,-soname,libevoffmpeg.so \
 # 	$FF_C_MERGE_COMMAND \
 #   $FF_CFLAGS \
 #   $FF_EXTRA_CFLAGS \
@@ -479,7 +479,7 @@ echo "--------------------"
 # 	-O3 \
 # 	-Wl,-s	\
 # 	-Wl,-E \
-#     -o $FF_PREFIX/libijkffmpeg.so
+#     -o $FF_PREFIX/libevoffmpeg.so
 	
 # rm -f $FF_PREFIX/*.a
 # rm -f $FF_PREFIX/*.o
@@ -488,7 +488,7 @@ echo "--------------------"
 
 $CC -Xlinker -zmuldefs -lm -lz -fPIC -shared --sysroot=$FF_SYSROOT \
    -Wl,--no-undefined -Wl,-z,noexecstack \
-   -Wl,-soname,libijkffmpeg.so \
+   -Wl,-soname,libevoffmpeg.so \
    $FF_C_OBJ_FILES \
    $FF_ASM_OBJ_FILES \
    $FF_CFLAGS \
@@ -496,7 +496,7 @@ $CC -Xlinker -zmuldefs -lm -lz -fPIC -shared --sysroot=$FF_SYSROOT \
    $FF_EXTRA_LDFLAGS \
    $FF_EXTRA_CXXLDFLAGS \
    $FF_EXTRA_LIBS \
-   -o $FF_PREFIX/libijkffmpeg.so
+   -o $FF_PREFIX/libevoffmpeg.so
 
 echo ""
 echo "--------------------"
@@ -519,7 +519,7 @@ echo "--------------------"
 rm -rf $FF_PREFIX/shared
 mkdir -p $FF_PREFIX/shared/lib/pkgconfig
 ln -s $FF_PREFIX/include $FF_PREFIX/shared/include
-ln -s $FF_PREFIX/libijkffmpeg.so $FF_PREFIX/shared/lib/libijkffmpeg.so
+ln -s $FF_PREFIX/libevoffmpeg.so $FF_PREFIX/shared/lib/libevoffmpeg.so
 cp $FF_PREFIX/lib/pkgconfig/*.pc $FF_PREFIX/shared/lib/pkgconfig
 for f in $FF_PREFIX/lib/pkgconfig/*.pc; do
     # in case empty dir
