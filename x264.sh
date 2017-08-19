@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#vs2015±àÒë³ÌÐò
+#vs2015ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 export DEVENV="devenv.exe"
 function makedir()
 {
@@ -23,14 +23,12 @@ echo "::download x264"
 cd $EXTERA
 git clone --depth 1 http://git.videolan.org/git/x264.git
 
-
-
 cd x264
 SOURCE=$(pwd)
 cp -f $ROOT/patch/x264/extras/avisynth_c.h ./extras/avisynth_c.h
 
 echo "::configure"
-./configure --help > ../x264.txt
+./configure --help > ../../bin/x264.txt
 ./configure \
 --enable-shared \
 --enable-static \
