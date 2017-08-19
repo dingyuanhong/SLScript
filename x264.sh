@@ -33,6 +33,10 @@ echo "::configure"
 --enable-shared \
 --enable-static \
 --disable-asm \
+--disable-pthread \
+--enable-win32thread \
+--extra-cflags="-Os -fpic" \
+--extra-ldflags="-fpic" \
 --prefix=${ROOT}/bin/x264/
 
 echo "::make"
