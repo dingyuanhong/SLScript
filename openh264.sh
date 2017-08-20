@@ -23,7 +23,11 @@ makedir $EXTERA
 
 echo "::download openh264"
 cd $EXTERA
-git clone --depth 1 https://github.com/cisco/openh264.git
+# git clone --depth 1 https://github.com/cisco/openh264.git
+wget http://ffmpeg.zeranoe.com/builds/source/external_libraries/openh264-1.7.0.tar.xz
+tar -xvJf openh264-1.7.0.tar.xz
+rm -r -f openh264
+mv openh264-1.7.0 openh264
 
 # cd openh264
 # SOURCE=$(pwd)
