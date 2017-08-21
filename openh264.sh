@@ -20,14 +20,15 @@ export OUTPUT=$ROOT/bin
 EXTERA=extra
 echo '::'$EXTERA
 makedir $EXTERA
+cd $EXTERA
 
 echo "::download openh264"
-cd $EXTERA
-# git clone --depth 1 https://github.com/cisco/openh264.git
-wget http://ffmpeg.zeranoe.com/builds/source/external_libraries/openh264-1.7.0.tar.xz
-tar -xvJf openh264-1.7.0.tar.xz
 rm -r -f openh264
-mv openh264-1.7.0 openh264
+# git clone --depth 1 https://github.com/cisco/openh264.git
+#wget http://ffmpeg.zeranoe.com/builds/source/external_libraries/openh264-1.7.0.tar.xz
+#tar -xvJf openh264-1.7.0.tar.xz
+#mv openh264-1.7.0 openh264
+git clone --depth 1 --branch v1.5.0  https://github.com/cisco/openh264.git
 
 # cd openh264
 # SOURCE=$(pwd)

@@ -148,7 +148,7 @@ fi
 #remove cygwin's link.exe
 
 CONFIGURE=0
-if [ $CONFIGURE ];then
+if [ $CONFIGURE == 1 ];then
 	export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 	echo "::configure"
 	./configure > ../../bin/$WGET_NAME.txt
