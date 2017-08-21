@@ -146,21 +146,25 @@ fi
 
 #C compiler test failed.
 #remove cygwin's link.exe
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-echo "::configure"
-./configure > ../../bin/$WGET_NAME.txt
-./configure \
---enable-gpl \
---enable-nonfree \
---disable-yasm \
-${EXTRA_CONFIGURE} \
---extra-cflags="${EXTRA_CFLAGS}" \
---extra-ldflags="${EXTRA_LDFLAGS}" \
---enable-shared \
---enable-static \
---logfile=${EXTRA_PATH}/ffmpeg_config.log \
---toolchain=msvc \
---prefix=${ROOT}/bin/ffmpeg/
+
+CONFIGURE=0
+if [ $CONFIGURE ];then
+	export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+	echo "::configure"
+	./configure > ../../bin/$WGET_NAME.txt
+	./configure \
+	--enable-gpl \
+	--enable-nonfree \
+	--disable-yasm \
+	${EXTRA_CONFIGURE} \
+	--extra-cflags="${EXTRA_CFLAGS}" \
+	--extra-ldflags="${EXTRA_LDFLAGS}" \
+	--enable-shared \
+	--enable-static \
+	--logfile=${EXTRA_PATH}/ffmpeg_config.log \
+	--toolchain=msvc \
+	--prefix=${ROOT}/bin/ffmpeg/
+fi
 
 echo "::make"
 make clean
