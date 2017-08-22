@@ -17,7 +17,7 @@ PATH=%PATH%;"../%CMAKE_NAME%/bin/";
 echo "::cmake"
 rem rm -f CMakeCache.txt
 rem rm -f -r CMakeFiles
-mkdir ../../bin/openjpeg_x64/
+mkdir "../../bin/openjpeg_x64/"
 
 rem -DBUILD_SHARED_LIBS=ON  shared
 rem -DBUILD_SHARED_LIBS=OFF static
