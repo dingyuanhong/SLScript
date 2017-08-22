@@ -15,8 +15,8 @@ cd extra/openjpeg
 echo "make::"
 PATH=%PATH%;"../%CMAKE_NAME%/bin/";
 echo "::cmake"
-rem rm -f CMakeCache.txt
-rem rm -f -r CMakeFiles
+rm -f CMakeCache.txt
+rm -f -r CMakeFiles
 mkdir "../../bin/openjpeg_x86/"
 
 rem -DBUILD_SHARED_LIBS=ON  shared
