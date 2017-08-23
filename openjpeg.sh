@@ -1,5 +1,5 @@
-
 #!/bin/sh
+
 #编译方法
 #http://blog.csdn.net/10km/article/details/50581246
 
