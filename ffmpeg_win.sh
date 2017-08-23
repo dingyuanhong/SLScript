@@ -183,10 +183,10 @@ else
 fi
 EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${X264}/include"
 EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${X264}/lib"
+PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${X264_ABS}/lib/pkgconfig"
 if [ $MSVC == true ];then
 	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} x264.lib -libpath:${X264}/lib"
 fi
-PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${X264_ABS}/lib/pkgconfig"
 if [ ${OS} == 'WINDOWS' ];then
 	cp -f "${X264}/lib/libx264.a" "${X264}/lib/x264.lib"
 	cp -f "${X264}/lib/libx264.dll.a" "${X264}/lib/x264.dll.lib"
@@ -203,12 +203,13 @@ else
 	OPENH264=${EXTRA_PATH}/openh264_32
 	OPENH264_ABS=${EXTRA_PATH_ABS}/openh264_32
 fi
-EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${OPENH264_ABS}/include"
-EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${OPENH264_ABS}/lib"
+EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${OPENH264}/include"
+EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${OPENH264}/lib"
+PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264_ABS}/lib/pkgconfig"
+PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264}/lib/pkgconfig"
 if [ $MSVC == true ];then
 	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${OPENH264}/lib"
 fi
-PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264_ABS}/lib/pkgconfig"
 
 if [ ${OS} == 'WINDOWS' ];then
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-w32threads"
