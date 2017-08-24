@@ -6,6 +6,7 @@ call "%VS140COMNTOOLS%/../../VC/vcvarsall.bat" amd64
 rem git clone --depth 1 https://github.com/uclouvain/openjpeg.git
 
 set CMAKE_NAME=cmake-3.9.1-win64-x64
+call cmake64.bat
 
 rem wget https://cmake.org/files/v3.9/%CMAKE_NAME%.zip
 rem unzip %CMAKE_NAME%.zip
