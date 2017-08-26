@@ -230,7 +230,7 @@ fi
 #C compiler test failed.
 #remove cygwin's link.exe
 
-CONFIGURE=0
+CONFIGURE=1
 if [ $CONFIGURE == 1 ];then
 	export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 	echo "::configure"
