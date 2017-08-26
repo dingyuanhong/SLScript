@@ -210,6 +210,9 @@ PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264}/lib/pkgconfig"
 if [ $MSVC == true ];then
 	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${OPENH264}/lib"
 fi
+if [ ${OS} == 'WINDOWS' ];then
+	PATH=$PATH:${OPENH264}/bin/
+fi
 
 if [ ${OS} == 'WINDOWS' ];then
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-w32threads"
