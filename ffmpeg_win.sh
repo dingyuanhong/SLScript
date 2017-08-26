@@ -48,7 +48,17 @@ EXTRA_LIBS=""
 EXTRA_CONFIGURE=""
 
 ARCH=x86
-#ARCH=x86_64
+# ARCH=x86_64
+
+NOCROSS=1
+CONFIGURE=1
+BUILD=1
+
+FF_ARCH=$1
+if [ ! $FF_ARCH == '' ];then
+	ARCH=$FF_ARCH
+	echo 'ARCH:'$ARCH
+fi
 
 DEBUG=1
 QUICK=1
@@ -62,8 +72,6 @@ else
 	PREFIX=${ROOT}/bin/ffmpeg/
 fi
 
-NOCROSS=1
-
 if [ $ARCH == "x86_64" ];then
 	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=x86_64"
 else
@@ -71,7 +79,8 @@ else
 fi
 if [ $NOCROSS == 1 ];then
 	EXTRA_CONFIGURE="$EXTRA_CONFIGURE"
-	EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmsvcrt"
+	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --toolchain=msvc"
+	MSVC=true
 elif [[ $(uname) == MINGW* ]];then
 	echo $(uname)
 	EXTRA_CFLAGS="$EXTRA_CFLAGS -I/mingw/include -I/include -I/usr/include -I/usr/local/include"
@@ -90,18 +99,27 @@ elif [[ $(uname) == CYGWIN* ]];then
 		# EXTRA_CONFIGURE="$EXTRA_CONFIGURE --cross-prefix=/usr/i686-w64-mingw32/bin/"
 		PATH=/usr/i686-w64-mingw32/bin/:$PATH
 	fi
-else
-	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --toolchain=msvc"
-	EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmsvcrt"
-	MSVC=true
 fi
 
-if [ DEBUG ];then
+PATH=$PATH:${EXTRA_PATH_ABS}
+
+if [ $DEBUG == 1 ];then
+	echo "DEBUG"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-debug"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-memalign-hack"
-	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-optimizations"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-stripping"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-asm"
+	if [ $MSVC == true ];then
+		EXTRA_CFLAGS="$EXTRA_CFLAGS -Zi -Od"
+		EXTRA_CFLAGS="$EXTRA_CFLAGS -MDd"
+		EXTRA_LDFLAGS="$EXTRA_LDFLAGS -DEBUG -VERBOSE"
+		# EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-optimizations"
+	else
+		EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmsvcrt"
+		EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O0"
+		EXTRA_LDFLAGS="$EXTRA_LDFLAGS -g -O0"
+		EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-optimizations"
+	fi
 else
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-debug"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-optimizations"
@@ -109,7 +127,7 @@ else
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-asm"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-small"
 fi
-if [ QUICK ];then
+if [ $QUICK == 1 ];then
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-ffmpeg"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-ffplay"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --disable-ffprobe"
@@ -150,7 +168,7 @@ fi
 EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${EXTRA_PATH}/libjpeg/include"
 EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${LIBJPEG}/Release"
 if [ $MSVC == true ];then
-	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${LIBJPEG_ABS}/Release jpeg.lib"
+	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${LIBJPEG_ABS}/Release"
 fi
 
 
@@ -165,7 +183,7 @@ else
 fi
 EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${OPENJPEG}/lib"
 if [ $MSVC == true ];then
-	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} libopenjp2.a -libpath:${OPENJPEG}/lib"
+	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${OPENJPEG}/lib"
 fi
 EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${OPENJPEG}/include/openjpeg-2.2"
 PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENJPEG_ABS}/lib/pkgconfig"
@@ -187,15 +205,16 @@ else
 	X264_ABS=${EXTRA_PATH_ABS}/x264
 fi
 EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${X264}/include"
-EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${X264}/lib"
+EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${X264}/lib -L${X264_ABS}/lib"
 PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${X264_ABS}/lib/pkgconfig"
+PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${X264}/lib/pkgconfig"
 if [ $MSVC == true ];then
-	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} x264.lib -libpath:${X264}/lib"
+	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -libpath:${X264}/lib"
 fi
 if [ ${OS} == 'WINDOWS' ];then
 	cp -f "${X264}/lib/libx264.a" "${X264}/lib/x264.lib"
 	cp -f "${X264}/lib/libx264.dll.a" "${X264}/lib/x264.dll.lib"
-	# cp -f "${X264}/lib/libx264.dll.a" "${X264}/lib/x264.lib"
+	cp -f "${X264}/lib/libx264.dll.a" "${X264}/lib/x264.lib"
 	PATH=$PATH:${X264}/bin/
 fi
 
@@ -209,7 +228,7 @@ else
 	OPENH264_ABS=${EXTRA_PATH_ABS}/openh264_32
 fi
 EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${OPENH264}/include"
-EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${OPENH264}/lib"
+EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -L${OPENH264}/lib -L${OPENH264_ABS}/lib"
 PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264_ABS}/lib/pkgconfig"
 PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${OPENH264}/lib/pkgconfig"
 if [ $MSVC == true ];then
@@ -230,7 +249,6 @@ fi
 #C compiler test failed.
 #remove cygwin's link.exe
 
-CONFIGURE=1
 if [ $CONFIGURE == 1 ];then
 	export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 	echo "::configure"
@@ -251,7 +269,6 @@ if [ $CONFIGURE == 1 ];then
 	--prefix=${PREFIX}
 fi
 
-BUILD=1
 if [ $BUILD == 1 ];then
 	echo "::make"
 	make clean
@@ -260,5 +277,5 @@ if [ $BUILD == 1 ];then
 	echo "::make install"
 	make install
 	echo "::make clean"
-	make clean
+	# make clean
 fi
