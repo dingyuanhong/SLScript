@@ -225,7 +225,7 @@ fi
 #C compiler test failed.
 #remove cygwin's link.exe
 
-CONFIGURE=1
+CONFIGURE=0
 if [ $CONFIGURE == 1 ];then
 	export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 	echo "::configure"
@@ -245,12 +245,15 @@ if [ $CONFIGURE == 1 ];then
 	--logfile=${EXTRA_PATH}/ffmpeg_config.log \
 	--prefix=${PREFIX}
 fi
-exit
-echo "::make"
-make clean
-make -j4
 
-echo "::make install"
-make install
-echo "::make clean"
-make clean
+BUILD=1
+if [ $BUILD == 1 ];then
+	echo "::make"
+	make clean
+	make -j4
+
+	echo "::make install"
+	make install
+	echo "::make clean"
+	make clean
+fi
