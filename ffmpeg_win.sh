@@ -42,8 +42,8 @@ echo "::configure ffmepeg"
 
 EXTRA_PATH=../../bin
 EXTRA_PATH_ABS=$(pwd)/../../bin
-EXTRA_CFLAGS="-fPIC -DANDROID -I/usr/local/include -I/usr/include -I/include -I/mingw/include"
-EXTRA_LDFLAGS="-L/usr/local/lib -L/lib -L/usr/lib -L/mingw/lib"
+EXTRA_CFLAGS="-fPIC -DANDROID "
+EXTRA_LDFLAGS=""
 EXTRA_LIBS=""
 EXTRA_CONFIGURE=""
 
@@ -55,39 +55,44 @@ QUICK=1
 OS="WINDOWS"
 MSVC=false
 PREFIX=
+
 if [ $ARCH == "x86_64" ];then
 	PREFIX=${ROOT}/bin/ffmpeg_64/
 else
 	PREFIX=${ROOT}/bin/ffmpeg/
 fi
 
-if [[ $(uname) == MINGW* ]];then
+NOCROSS=1
+
+if [ $ARCH == "x86_64" ];then
+	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=x86_64"
+else
+	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=i686"
+fi
+if [ $NOCROSS == 1 ];then
+	EXTRA_CONFIGURE="$EXTRA_CONFIGURE"
+	EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmsvcrt"
+elif [[ $(uname) == MINGW* ]];then
 	echo $(uname)
+	EXTRA_CFLAGS="$EXTRA_CFLAGS -I/mingw/include -I/include -I/usr/include -I/usr/local/include"
+	EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/mingw/lib -L/lib -L/usr/lib -L/usr/local/lib"
 	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -lmingwex -lmsvcrt -lgcc -lgcc_s"
-	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-cross-compile"
-	if [ $ARCH == "x86_64" ];then
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=x86_64 --target-os=mingw32"
-	else
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=i686 --target-os=mingw32"
-	fi
-elif [[ $(uname) == CYGWIN* ]];then
-	echo $(uname)
-	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -lmingwex -lmsvcrt -lgcc -lgcc_s"
-	EXTRA_CFLAGS="${EXTRA_CFLAGS} -mno-cygwin"
-	EXTRA_LIBS="${EXTRA_LIBS} -mno-cygwin"
 	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-cross-compile"
 	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --target-os=mingw32"
+elif [[ $(uname) == CYGWIN* ]];then
+	echo $(uname)
+	EXTRA_CONFIGURE="${EXTRA_CONFIGURE} --enable-cross-compile"
+	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --target-os=cygwin"
 	if [ $ARCH == "x86_64" ];then
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=x86_64"
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --host=x86_64-w64-mingw32"
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE –cross-prefix=/usr/x86_64-w64-mingw32/bin/"
+		# EXTRA_CONFIGURE="$EXTRA_CONFIGURE --cross-prefix=/usr/x86_64-w64-mingw32/bin/"
+		PATH=/usr/x86_64-w64-mingw32/bin/:$PATH
 	else
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --arch=i686"
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE --host=i686-pc-mingw32"
-		EXTRA_CONFIGURE="$EXTRA_CONFIGURE –cross-prefix=/usr/i686-pc-mingw32/bin/"
+		# EXTRA_CONFIGURE="$EXTRA_CONFIGURE --cross-prefix=/usr/i686-w64-mingw32/bin/"
+		PATH=/usr/i686-w64-mingw32/bin/:$PATH
 	fi
 else
 	EXTRA_CONFIGURE="$EXTRA_CONFIGURE --toolchain=msvc"
+	EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmsvcrt"
 	MSVC=true
 fi
 
