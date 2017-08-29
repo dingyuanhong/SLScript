@@ -8,7 +8,7 @@ cd extra/openh264
 
 echo "make::"
 make 'OS=msvc' clean
-PATH=%PATH%;"../../bin/nasm32/";
+PATH=%PATH%;../../bin/nasm32/;
 set PREFIX=../../bin/openh264_32
 
 dos2unix ./codec/common/*.sh

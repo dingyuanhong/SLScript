@@ -7,7 +7,7 @@ call "%VS140COMNTOOLS%/../../VC/vcvarsall.bat" amd64
 cd extra/openh264
 echo "make::"
 make 'OS=msvc' clean
-set PATH=%PATH%;"%ROOT%/bin/nasm64/";
+set PATH=%PATH%;%ROOT%/bin/nasm64/;
 set PREFIX=../../bin/openh264_64
 
 dos2unix ./codec/common/*.sh
