@@ -81,19 +81,39 @@ def GetCapacity(capacity):
         mode = "b"
     return {"cap":capacity,"mode":mode}
 
+def GetTimeString(seconds):
+    hours = seconds / 3600;
+    minute = seconds / 60;
+    second = seconds % 60;
+    strRet = "";
+    if(hours > 0 ):
+        strRet += str(hours) + "h";
+    if(minute > 0):
+        strRet += str(minute) + "m";
+    if(second > 0):
+        strRet += str(second) + "s";
+    if(len(strRet) == 0):
+        strRet = "0s";
+    return strRet;
+
 def UpdateRate(total,block,time):
-    rate = 0
-    if time == 0:
-        rate = block
-    else:
-        rate = float(block)/time
+    rate = float(block)/time
     rateObj = GetCapacity(rate)
     blockObj = GetCapacity(block)
-
-    if(total == 0):
-        print (str("%.0f" + blockObj["mode"] + " %.02f" + rateObj["mode"] + "ps")%(blockObj["cap"],rateObj["cap"]))
+    totalObj = GetCapacity(total)
+    surplusTime = (total - block) / (block/time);
+    strRet = "";
+    if(total != 0):
+        strRet += str("%.02f%s") % (totalObj["cap"],totalObj["mode"]);
+        strRet += str(" %.0f%%") % (100*block/total);
+    strRet += str(" %.0f%s") % (blockObj["cap"],blockObj["mode"]);
+    strRet += str(" %.02f%s/s") % (rateObj["cap"],rateObj["mode"]);
+    strRet += " etc " + GetTimeString(surplusTime);
+    if(total != 0 and block == total):
+        print "%s         "%(strRet);
     else:
-        print (str("%.0f%%"+ " %.02f" + rateObj["mode"] + "ps")%(100*blockObj["cap"]/total,rateObj["cap"]))
+        print "%s         \r"%(strRet),;
+    return strRet;
 
 def DownloadURL(url,file):
     print("DownloadURL(\"" + url + "\")")

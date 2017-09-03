@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 import URLContent
 import types
+import os
 
 def ParseURL(url):
     result = URLContent.GetCacheUrl(url)
@@ -45,7 +46,9 @@ def FindPacketDownload(name,Dir):
     return 0
 
 if __name__ == '__main__':
-    Dir = "../extra/"
+    pwd = os.getcwd();
+    # Dir = pwd + "/extra/"
+    Dir = pwd + "/../extra/"
     FindPacketDownload("OpenH264",Dir)
     # url = "http://ffmpeg.zeranoe.com/builds/source/external_libraries/openh264-1.7.0.tar.xz"
     # URLContent.DownloadURL(url,Dir + "test.tar.xz");
