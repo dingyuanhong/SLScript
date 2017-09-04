@@ -108,7 +108,7 @@ def UpdateRate(total,block,time):
         strRet += str(" %.0f%%") % (100*block/total);
     strRet += str(" %.0f%s") % (blockObj["cap"],blockObj["mode"]);
     strRet += str(" %.02f%s/s") % (rateObj["cap"],rateObj["mode"]);
-    strRet += " etc " + GetTimeString(surplusTime);
+    strRet += " eta " + GetTimeString(surplusTime);
     if(total != 0 and block == total):
         print "%s         "%(strRet);
     else:
