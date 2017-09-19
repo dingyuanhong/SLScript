@@ -1,7 +1,7 @@
 
 cd extra
 
-wget https://github.com/opencv/opencv/archive/3.3.0.tar.gz
+rem wget https://github.com/opencv/opencv/archive/3.3.0.tar.gz
 rem wget https://github.com/opencv/opencv/archive/3.3.0.zip
 
 cd opencv-3.3.0
@@ -17,10 +17,18 @@ rm -f -r CMakeFiles
 mkdir "../../bin/opencv_x86/"
 
 rem Win64
-mkdir ./build
+mkdir build
 cd build
 
-cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=RELEASE ../
+rem cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=RELEASE ../
 
+rem vs2015
+set DEVENV=devenv.exe
+call "%VS140COMNTOOLS%/../../VC/vcvarsall.bat" x86
+
+rem %DEVENV% OpenCV.sln -project "ALL_BUILD" -Build "Debug|x64"
+%DEVENV% OpenCV.sln /project ALL_BUILD /build "Debug|Win32"
+rem %DEVENV% OpenCV.sln -project ALL_BUILD -Build "Release|x64"
+rem %DEVENV% OpenCV.sln -project ALL_BUILD -Build "Release|Win32"
 
 cd ../../../
