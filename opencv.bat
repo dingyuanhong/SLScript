@@ -1,8 +1,14 @@
 
 cd extra
 
-rem wget https://github.com/opencv/opencv/archive/3.3.0.tar.gz
+if not exist  opencv-3.3.0.tar.gz (
+wget https://github.com/opencv/opencv/archive/3.3.0.tar.gz
 rem wget https://github.com/opencv/opencv/archive/3.3.0.zip
+mv 3.3.0.tar.gz opencv-3.3.0.tar.gz
+)
+if not exist opencv-3.3.0 (
+tar -xzvf opencv-3.3.0.tar.gz
+)
 
 cd opencv-3.3.0
 
@@ -20,7 +26,7 @@ rem Win64
 mkdir build
 cd build
 
-rem cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=RELEASE ../
+cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=RELEASE ../
 
 rem vs2015
 set DEVENV=devenv.exe
