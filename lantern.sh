@@ -29,7 +29,7 @@ if [ $OS != 'linux' ]
 then
 	echo '::patch'
 	cd $ROOT/patch
-	lantern_patch.sh
+	./lantern_patch.sh
 	
 	cd $LANTERN_ROOT
 	echo '::make build '
